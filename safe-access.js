@@ -42,6 +42,16 @@
     } else if (isTokenArrayAccess(currentToken)) {
 
       return helper(obj[parseInt(currentToken.substr(1), 10)],
+        tokens.slice(1),
+        // lookahead two tokens for function calls
+        isTokenFunctionCall(tokens[1]) ? obj : ctx,
+        fnArgs);
+
+    } else if (isTokenFieldAccess(currentToken)) {
+
+      var firstIndex = currentToken.indexOf('"');
+      var lastIndex = currentToken.lastIndexOf('"');
+      return helper(obj[currentToken.substring(firstIndex + 1, lastIndex)],
           tokens.slice(1),
           // lookahead two tokens for function calls
           isTokenFunctionCall(tokens[1]) ? obj : ctx,
@@ -82,8 +92,12 @@
     return /^\[\d+\]$/.test(token);
   }
 
+  function isTokenFieldAccess(token) {
+    return /^\[\"\w+\.\w+\.*\w*\.*\w*\"\]$/.test(token);
+  }
+
   function tokenize(str) {
-    return str.split(/\.|(\(\))|(\[\d+?])/).filter(function(t) { return t; });
+    return str.split(/\.|(\(\))|(\[\d+?])|(\[\"\w+\.\w+\.*\w*\.*\w*\"\])/).filter(function(t) { return t; });
   }
 
 }));
